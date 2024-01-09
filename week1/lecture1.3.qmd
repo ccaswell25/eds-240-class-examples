@@ -1,0 +1,115 @@
+---
+title: "Lecture 1.3"
+date: 2024-01-08
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+```
+
+
+## Tidy Data Exercise
+```{r}
+# untidy data ----
+temp_data_wide <- tribble(
+  ~date, ~station1, ~station2,  ~station3,
+  "2023-10-01", 30.1, 29.8,  31.2,
+  "2023-11-01", 28.6, 29.1,  33.4,
+  "2023-12-01", 29.9, 28.5,  32.3
+)
+# make tidy:
+temp_data_long <- temp_data_wide |> 
+  pivot_longer(cols = starts_with("station"),
+               names_to = "station_id", 
+               values_to = "temp_c")
+```
+
+## Plot 1 
+```{r}
+#mapping color globally
+ggplot(na.omit(penguins), mapping = aes(x = bill_length_mm,
+                                      y = bill_depth_mm, color = species)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  scale_color_manual(values = c("darkorange", "purple", "cyan4")) #adding a color scale to our species colors
+
+#mapping color locally
+ggplot(na.omit(penguins), aes(x = bill_length_mm,
+                                      y = bill_depth_mm)) +
+  geom_point(aes(color = species)) + 
+  geom_smooth(method = lm)
+#mapping a linear model to the entire dataset instead of by species
+
+#mapping color with a continuous variable / range of colors 
+ggplot(penguins, aes(x= body_mass_g, y = flipper_length_mm,
+                     color = body_mass_g)) + 
+  geom_point() +
+  scale_color_gradient(low = "#132B43", high = "#F7DD4C") #adding a color scale 
+
+
+#OTHER WAYS:
+#another way to start the graph with piping:
+# penguins %>% 
+#  ggplot(aes(x = bill_length_mm, y = bill_depth_mm))
+
+#another way to graph:
+#ggplot() +
+#  geom_point(data = penguins, mapping = aes(x = bill_length_mm, y = bill_depth_mm))
+```
+
+## Plot 2 
+
+```{r}
+ggplot(penguins, aes(x= species)) +
+  geom_bar()
+```
+
+Overriding geom_bar's stat by including a y aesthetic:
+
+```{r}
+penguins_summary <- penguins %>% 
+  count(species)
+
+ggplot(penguins(summary, aes(x = species, y = n))) +
+         geom_bar(stat = "identity")
+```
+
+Override default stat mapping: 
+```{r}
+# want to plot proportion
+ggplot(penguins, aes(x= species, y = after_stat(prop), group = 1)) + #adding group = 1 to tell it to calculate the prop of the entire dataset
+  geom_bar()
+```
+
+Position Adjustments:
+```{r}
+ggplot(penguins, aes(x = species, fill = island)) + 
+  geom_bar(position = "dodge") #adding position to change the default stacked version
+
+#other options can be: position_dodge1, position_dodge2, fill
+```
+
+Coordinate systems:
+```{r}
+ggplot(penguins, aes(x = species)) + 
+  geom_bar() + 
+  coord_cartesian() # this is defaulted in our ggplot graphs
+
+ggplot(penguins, aes(x = species)) + 
+  geom_bar() + 
+  coord_flip() #flips the axes
+
+ggplot(penguins, aes(x = species)) + 
+  geom_bar() + 
+  coord_polar() + #changes the axes to be circular
+  theme_minimal() #adding a theme to the plot + 
+  theme( #where you can change a lot about your plot
+    axis.title = element_text(size = 17, color = "purple") #changing size and color of the axes
+  )
+```
+
+
+
